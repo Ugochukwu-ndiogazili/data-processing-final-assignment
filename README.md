@@ -145,7 +145,8 @@ Set `TMDB_API_KEY` in environment variables (optional, uses demo key if not set)
 - **API User**: `api_user_account` (limited permissions)
 - **Admin User**: `postgres` (full access)
 Set `API_DB_PASSWORD` to provision the API user password; the backend connects using
-`API_DATABASE_URL` in `docker-compose.yml`.
+`API_DATABASE_URL` in `docker-compose.yml`. Example value: `API_DB_PASSWORD=change-me`
+(`docs/ENV_EXAMPLE.md`).
 
 ### Database Features
 - **Views**: `view_accounts_public`, `view_profiles_with_filters`

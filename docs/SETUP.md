@@ -16,7 +16,8 @@ The root workspace installs both `backend` and `frontend` packages.
 Copy `backend/.env.example` to `backend/.env` and adjust secrets (database URL, JWT keys, SMTP).
 Set `API_DB_PASSWORD` to provision the `api_user_account` with a password during database
 initialization. The API will use `API_DATABASE_URL` (constructed in `docker-compose.yml`) to
-connect as this limited user.
+connect as this limited user. Example: `API_DB_PASSWORD=change-me` (see
+`docs/ENV_EXAMPLE.md`).
 
 ## 3. Database
 Run PostgreSQL locally or via Docker:
