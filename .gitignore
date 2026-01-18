@@ -1,0 +1,62 @@
+# dependencies
+node_modules/
+*/node_modules/
+
+# env
+.env
+*.env
+backend/.env
+frontend/.env
+
+# builds
+dist/
+build/
+coverage/
+
+# editor
+.vscode/
+.idea/
+
+# os
+Thumbs.db
+.DS_Store
+
+# prisma
+backend/prisma/dev.db
+
+# logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-error.log*
+# Node
+node_modules/
+npm-debug.log*
+package-lock.json
+
+# Env
+.env
+backend/.env
+frontend/.env
+
+# Logs
+logs/
+*.log
+
+# Prisma
+backend/prisma/dev.db
+
+# Editor
+.vscode/
+.idea/
+
+# Build artifacts
+dist/
+build/
+frontend/dist/
+
+# misc
+coverage/
+tmp/
+.DS_Store
+

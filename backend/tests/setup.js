@@ -1,0 +1,23 @@
+process.env.NODE_ENV = 'test';
+process.env.PORT = process.env.PORT || '5050';
+process.env.DATABASE_URL =
+  process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/streamflix_test?schema=public';
+process.env.JWT_SECRET = process.env.JWT_SECRET || 'test-secret-123456789';
+process.env.JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || 'test-refresh-secret-123456789';
+process.env.JWT_EXPIRATION = process.env.JWT_EXPIRATION || '15m';
+process.env.REFRESH_EXPIRATION_DAYS = process.env.REFRESH_EXPIRATION_DAYS || '7';
+process.env.PASSWORD_SALT_ROUNDS = process.env.PASSWORD_SALT_ROUNDS || '4';
+process.env.RATE_LIMIT_MAX = process.env.RATE_LIMIT_MAX || '200';
+process.env.RATE_LIMIT_WINDOW_MIN = process.env.RATE_LIMIT_WINDOW_MIN || '1';
+process.env.BLOCK_THRESHOLD = process.env.BLOCK_THRESHOLD || '3';
+process.env.BLOCK_DURATION_MIN = process.env.BLOCK_DURATION_MIN || '30';
+process.env.MAIL_HOST = process.env.MAIL_HOST || 'localhost';
+process.env.MAIL_PORT = process.env.MAIL_PORT || '1025';
+process.env.MAIL_USER = process.env.MAIL_USER || 'user';
+process.env.MAIL_PASS = process.env.MAIL_PASS || 'pass';
+process.env.MAIL_FROM = process.env.MAIL_FROM || 'test@streamflix.local';
+process.env.FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
+process.env.TRIAL_DAYS = process.env.TRIAL_DAYS || '7';
+process.env.INVITE_DISCOUNT_DAYS = process.env.INVITE_DISCOUNT_DAYS || '30';
+process.env.INTERNAL_API_KEY = process.env.INTERNAL_API_KEY || 'internal-test';
+

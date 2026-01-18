@@ -1,0 +1,277 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "debian-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum AccountStatus {
+  PENDING
+  ACTIVE
+  BLOCKED
+}
+
+enum ProfileAgeCategory {
+  KIDS
+  TEEN
+  ADULT
+}
+
+model AgeCategory {
+  id          String    @id @default(uuid())
+  code        String    @unique
+  name        String
+  description String?
+  minAge      Int?
+  maxAge      Int?
+  profiles    Profile[]
+  titles      Title[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+enum TitleType {
+  FILM
+  SERIES
+}
+
+enum GuidelineFlag {
+  VIOLENCE
+  FEAR
+  COARSE_LANGUAGE
+}
+
+enum VerificationType {
+  VERIFY
+  RESET
+}
+
+enum EmployeeRole {
+  JUNIOR
+  MID
+  SENIOR
+}
+
+model Role {
+  id          String     @id @default(uuid())
+  code        String     @unique
+  name        String
+  description String?
+  level       Int
+  permissions String[]
+  employees   Employee[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+}
+
+enum SubscriptionStatus {
+  TRIAL
+  ACTIVE
+  CANCELED
+  PAST_DUE
+}
+
+model Account {
+  id                 String              @id @default(uuid())
+  email              String              @unique
+  passwordHash       String
+  status             AccountStatus       @default(PENDING)
+  failedAttempts     Int                 @default(0)
+  blockedUntil       DateTime?
+  trialEndsAt        DateTime?
+  acceptedInvitation Invitation?         @relation("InviteeRelation")
+  invitations        Invitation[]        @relation("InviterRelation")
+  profiles           Profile[]
+  watchEvents        WatchEvent[]
+  subscription       Subscription?
+  discounts          DiscountLedger[]
+  verification       VerificationToken[]
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+}
+
+model VerificationToken {
+  id        String           @id @default(uuid())
+  token     String           @unique
+  type      VerificationType
+  expiresAt DateTime
+  usedAt    DateTime?
+  accountId String
+  account   Account          @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  createdAt DateTime         @default(now())
+}
+
+model Profile {
+  id             String             @id @default(uuid())
+  accountId      String
+  account        Account            @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  name           String
+  ageCategory    ProfileAgeCategory
+  ageCategoryId  String?
+  ageCategoryRef AgeCategory?       @relation(fields: [ageCategoryId], references: [id])
+  imageUrl       String?
+  preferences    Json               @default("{}")
+  watchEvents    WatchEvent[]
+  watchlist      WatchlistItem[]
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+}
+
+model Title {
+  id                 String             @id @default(uuid())
+  slug               String             @unique
+  name               String
+  synopsis           String?
+  type               TitleType
+  minAge             ProfileAgeCategory
+  minAgeCategoryId   String?
+  minAgeCategory     AgeCategory?       @relation(fields: [minAgeCategoryId], references: [id])
+  guidelineFlags     GuidelineFlag[]
+  availableQualities String[]
+  genres             String[]
+  durationMinutes    Int?
+  seasons            Season[]
+  episodes           Episode[]
+  watchEvents        WatchEvent[]
+  watchlistItems     WatchlistItem[]
+  subtitles          Subtitle[]
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+}
+
+model Season {
+  id       String    @id @default(uuid())
+  number   Int
+  titleId  String
+  title    Title     @relation(fields: [titleId], references: [id], onDelete: Cascade)
+  episodes Episode[]
+
+  @@unique([titleId, number], name: "titleId_number")
+}
+
+model Episode {
+  id              String       @id @default(uuid())
+  titleId         String
+  seasonId        String?
+  season          Season?      @relation(fields: [seasonId], references: [id], onDelete: Cascade)
+  number          Int
+  name            String
+  synopsis        String?
+  durationMinutes Int
+  watchEvents     WatchEvent[]
+  subtitles       Subtitle[]
+  title           Title        @relation(fields: [titleId], references: [id], onDelete: Cascade)
+
+  @@unique([seasonId, number], name: "seasonId_number")
+}
+
+model WatchEvent {
+  id              String    @id @default(uuid())
+  profileId       String
+  profile         Profile   @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  accountId       String
+  account         Account   @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  titleId         String
+  title           Title     @relation(fields: [titleId], references: [id], onDelete: Cascade)
+  episodeId       String?
+  episode         Episode?  @relation(fields: [episodeId], references: [id])
+  startedAt       DateTime  @default(now())
+  finishedAt      DateTime?
+  durationWatched Int       @default(0)
+  completed       Boolean   @default(false)
+  autoContinued   Boolean   @default(false)
+  lastPosition    Int       @default(0)
+}
+
+model WatchlistItem {
+  id        String   @id @default(uuid())
+  profileId String
+  titleId   String
+  addedAt   DateTime @default(now())
+  profile   Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  title     Title    @relation(fields: [titleId], references: [id], onDelete: Cascade)
+
+  @@unique([profileId, titleId])
+}
+
+model SubscriptionPlan {
+  id            String         @id @default(uuid())
+  code          String         @unique
+  name          String
+  quality       String
+  monthlyPrice  Int
+  description   String?
+  subscriptions Subscription[]
+}
+
+model Subscription {
+  id             String             @id @default(uuid())
+  accountId      String             @unique
+  account        Account            @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  planId         String
+  plan           SubscriptionPlan   @relation(fields: [planId], references: [id], onDelete: Restrict)
+  status         SubscriptionStatus @default(TRIAL)
+  renewalDate    DateTime?
+  trialEndsAt    DateTime?
+  discountEndsAt DateTime?
+  invitations    Invitation[]       @relation("SubscriptionInvites")
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+}
+
+model Invitation {
+  id                String           @id @default(uuid())
+  token             String           @unique
+  inviterAccountId  String
+  inviteeEmail      String
+  status            String           @default("PENDING")
+  acceptedAccountId String?          @unique
+  subscriptionId    String?
+  discountStartsAt  DateTime?
+  discountEndsAt    DateTime?
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  inviterAccount    Account          @relation("InviterRelation", fields: [inviterAccountId], references: [id], onDelete: Cascade)
+  inviteeAccount    Account?         @relation("InviteeRelation", fields: [acceptedAccountId], references: [id])
+  subscription      Subscription?    @relation("SubscriptionInvites", fields: [subscriptionId], references: [id])
+  discounts         DiscountLedger[]
+}
+
+model DiscountLedger {
+  id           String      @id @default(uuid())
+  accountId    String
+  account      Account     @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  invitationId String?
+  invitation   Invitation? @relation(fields: [invitationId], references: [id])
+  startsAt     DateTime
+  endsAt       DateTime
+  createdAt    DateTime    @default(now())
+}
+
+model Employee {
+  id           String       @id @default(uuid())
+  username     String       @unique
+  passwordHash String
+  role         EmployeeRole
+  roleId       String?
+  roleRef      Role?        @relation(fields: [roleId], references: [id])
+  createdAt    DateTime     @default(now())
+}
+
+model Subtitle {
+  id           String   @id @default(uuid())
+  titleId      String?
+  episodeId    String?
+  languageCode String
+  languageName String
+  fileUrl      String
+  format       String   @default("SRT")
+  isDefault    Boolean  @default(false)
+  title        Title?   @relation(fields: [titleId], references: [id], onDelete: Cascade)
+  episode      Episode? @relation(fields: [episodeId], references: [id], onDelete: Cascade)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
